@@ -39,6 +39,32 @@ def oauth_initiate(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+@login_required
+@require_role('Admin')
+@require_GET
+def list_devices(request):
+    """List all devices in the SDM project."""
+    try:
+        client = SDMClient()
+        devices = client.list_devices()
+        device_list = []
+        for d in devices:
+            traits = d.get('traits', {})
+            name = traits.get('sdm.devices.traits.Info', {}).get('customName', '')
+            device_list.append({
+                'device_id': d.get('name', '').split('/')[-1],
+                'full_name': d.get('name', ''),
+                'type': d.get('type', ''),
+                'custom_name': name,
+                'traits': list(traits.keys()),
+            })
+        return JsonResponse({'devices': device_list})
+    except SDMTokenError as e:
+        return JsonResponse({'error': str(e), 'hint': 'Complete OAuth flow first'}, status=401)
+    except SDMError as e:
+        return JsonResponse({'error': str(e)}, status=502)
+
+
 @csrf_exempt
 def oauth_callback(request):
     """Handle Google OAuth callback. No auth required (Google redirects here)."""
