@@ -142,9 +142,17 @@ class SDMClient:
             }
 
             try:
+                logger.info(f"SDM API {method} {url}")
+                logger.info(f"SDM API headers: Authorization: Bearer {token.access_token[:10]}..., Content-Type: application/json")
+                if 'json' in kwargs:
+                    logger.info(f"SDM API body: {kwargs['json']}")
+
                 response = requests.request(
                     method, url, headers=headers, timeout=30, **kwargs
                 )
+
+                if not response.ok:
+                    logger.error(f"SDM API response {response.status_code}: {response.text[:500]}")
 
                 if response.status_code == 401 and attempt < self.MAX_RETRIES - 1:
                     logger.warning("SDM API returned 401, refreshing token")
