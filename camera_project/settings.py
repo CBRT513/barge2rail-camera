@@ -28,7 +28,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(','
 SSO_BASE_URL = config('SSO_BASE_URL', default='https://sso.barge2rail.com')
 SSO_CLIENT_ID = config('SSO_CLIENT_ID', default=None)
 SSO_CLIENT_SECRET = config('SSO_CLIENT_SECRET', default=None)
-SSO_REDIRECT_URI = config('SSO_REDIRECT_URI', default='http://localhost:8000/auth/callback/')
+SSO_REDIRECT_URI = config('SSO_REDIRECT_URI', default='http://localhost:8000/api/auth/callback/')
 SSO_SCOPES = config('SSO_SCOPES', default='openid email profile roles')
 
 # Application identifier for role-based access
@@ -122,7 +122,7 @@ CACHES = {
 }
 
 # Authentication URLs
-LOGIN_URL = '/auth/login/'
+LOGIN_URL = '/api/auth/login/'
 LOGIN_REDIRECT_URL = '/api/status/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
 

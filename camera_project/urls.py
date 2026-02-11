@@ -6,9 +6,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # SSO authentication
-    path('auth/login/', auth_views.sso_login, name='sso_login'),
-    path('auth/callback/', auth_views.sso_callback, name='sso_callback'),
-    path('auth/logout/', auth_views.sso_logout, name='sso_logout'),
+    path('api/auth/login/', auth_views.sso_login, name='sso_login'),
+    path('api/auth/callback/', auth_views.sso_callback, name='sso_callback'),
+    path('api/auth/logout/', auth_views.sso_logout, name='sso_logout'),
     path('login/', auth_views.login_page, name='login_page'),
 
     # Camera API
