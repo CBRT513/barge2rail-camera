@@ -4,6 +4,7 @@ Django settings for barge2rail-camera project.
 Dock Camera + Claude Vision Classification Service
 """
 
+import os
 from pathlib import Path
 from decouple import config
 from django.core.exceptions import ImproperlyConfigured
@@ -51,7 +52,7 @@ GOOGLE_SDM_PROJECT_ID = config('GOOGLE_SDM_PROJECT_ID', default='')
 GOOGLE_CLOUD_PROJECT_ID = config('GOOGLE_CLOUD_PROJECT_ID', default='')
 GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
 GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET', default='')
-SDM_OAUTH_REDIRECT_URI = config('SDM_OAUTH_REDIRECT_URI', default='http://localhost:8000/api/oauth/callback/')
+SDM_OAUTH_REDIRECT_URI = os.environ.get('SDM_OAUTH_REDIRECT_URI', 'http://localhost:8000/api/oauth/callback/')
 
 # Anthropic API
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
