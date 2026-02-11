@@ -276,7 +276,7 @@ def sso_callback(request):
         logger.info(f"Created new user: {email}")
 
     # Grant admin access based on role
-    if role_name == "Admin":
+    if role_name == "camshare_admin":
         user.is_staff = True
         user.is_superuser = True
         user.save()
