@@ -10,6 +10,7 @@ import logging
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django_ratelimit.decorators import ratelimit
@@ -26,12 +27,13 @@ logger = logging.getLogger('camera.views')
 
 @login_required
 @require_role('Admin')
-@require_POST
 def oauth_initiate(request):
-    """Start Google SDM OAuth flow. Admin only."""
+    """Start Google SDM OAuth flow. Admin only. GET redirects to Google consent."""
     try:
         client = SDMClient()
         auth_url = client.get_authorization_url()
+        if request.method == 'GET':
+            return redirect(auth_url)
         return JsonResponse({'authorization_url': auth_url})
     except SDMError as e:
         return JsonResponse({'error': str(e)}, status=400)
