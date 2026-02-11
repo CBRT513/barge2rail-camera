@@ -32,7 +32,7 @@ SSO_REDIRECT_URI = config('SSO_REDIRECT_URI', default='http://localhost:8000/api
 SSO_SCOPES = config('SSO_SCOPES', default='openid email profile roles')
 
 # Application identifier for role-based access
-APP_IDENTIFIER = config('APP_IDENTIFIER', default='camera-share')
+APP_IDENTIFIER = config('APP_IDENTIFIER', default='cams')
 
 # Debug logging control for authentication flow
 DEBUG_AUTH_FLOW = config('DEBUG_AUTH_FLOW', default=False, cast=bool)
