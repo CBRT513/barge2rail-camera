@@ -25,7 +25,7 @@ logger = logging.getLogger('camera.views')
 # --- Google SDM OAuth ---
 
 @login_required
-@require_role('camshare_admin')
+@require_role('Admin')
 @require_POST
 def oauth_initiate(request):
     """Start Google SDM OAuth flow. Admin only."""
