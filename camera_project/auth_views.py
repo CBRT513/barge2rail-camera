@@ -256,13 +256,8 @@ def sso_callback(request):
     camera_role = application_roles.get(app_identifier)
 
     if not camera_role:
-        available = list(application_roles.keys())
-        logger.warning(f"User {email} does not have {app_identifier} role. Available apps: {available}")
-        return HttpResponseForbidden(
-            f"You don't have access to {app_identifier}. "
-            f"Available apps in JWT: {available}. "
-            f"Contact admin."
-        )
+        logger.warning(f"User {email} does not have {app_identifier} role. Available apps: {list(application_roles.keys())}")
+        return HttpResponseForbidden(f"You don't have access to {app_identifier}. Contact admin.")
 
     role_name = camera_role.get("role")
     permissions = camera_role.get("permissions", [])
