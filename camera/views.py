@@ -99,23 +99,23 @@ def oauth_callback(request):
 @ratelimit(key='user', rate='10/m', method='GET')
 @require_GET
 def grab_frame(request):
-    """Grab a frame from the configured Nest camera."""
+    """Grab a frame from the configured Nest camera via RTSP stream."""
     try:
         client = SDMClient()
         device_id = request.GET.get('device_id') or settings.DEFAULT_CAMERA_DEVICE_ID
 
-        image_data = client.generate_image(device_id)
+        image_bytes = client.grab_frame(device_id)
 
         snapshot = CameraSnapshot.objects.create(
             camera_device_id=device_id,
-            image_url=image_data['url'],
-            image_token=image_data.get('token', ''),
+            image_url='rtsp://stream',
+            image_token='',
         )
 
         return JsonResponse({
             'success': True,
             'snapshot_id': snapshot.id,
-            'image_url': image_data['url'],
+            'image_size': len(image_bytes),
             'captured_at': snapshot.captured_at.isoformat(),
         })
 
@@ -129,69 +129,24 @@ def grab_frame(request):
 
 
 @login_required
-@ratelimit(key='user', rate='5/m', method='POST')
-@require_POST
-def classify(request):
-    """Classify an existing snapshot via Claude Vision."""
-    snapshot_id = request.POST.get('snapshot_id')
-    if not snapshot_id:
-        return JsonResponse({'error': 'snapshot_id required'}, status=400)
-
-    try:
-        snapshot = CameraSnapshot.objects.get(pk=snapshot_id)
-    except CameraSnapshot.DoesNotExist:
-        return JsonResponse({'error': 'Snapshot not found'}, status=404)
-
-    try:
-        client = SDMClient()
-        image_bytes = client.download_image(snapshot.image_url, snapshot.image_token)
-    except SDMError as e:
-        return JsonResponse({'error': f'Failed to download image: {e}'}, status=502)
-
-    result = classify_image(image_bytes)
-
-    if not result.get('success'):
-        return JsonResponse({'error': result.get('error', 'Classification failed')}, status=502)
-
-    classification = ClassificationResult.objects.create(
-        snapshot=snapshot,
-        raw_response=result['raw_response'],
-        classification=result['classification'],
-        confidence=result['confidence'],
-        details=result.get('details', ''),
-        model_used=result.get('model_used', ''),
-    )
-
-    return JsonResponse({
-        'success': True,
-        'classification_id': classification.id,
-        'classification': classification.classification,
-        'confidence': classification.confidence,
-        'details': classification.details,
-        'model_used': classification.model_used,
-        'raw_response': result['raw_response'],
-    })
-
-
-@login_required
 @ratelimit(key='user', rate='3/m', method='GET')
 @require_GET
 def grab_and_classify(request):
-    """Grab a frame and classify it in one call."""
+    """Grab a frame via RTSP and classify it in one call."""
     try:
         client = SDMClient()
         device_id = request.GET.get('device_id') or settings.DEFAULT_CAMERA_DEVICE_ID
 
-        # Grab frame
-        image_data = client.generate_image(device_id)
+        # Grab frame from RTSP stream
+        image_bytes = client.grab_frame(device_id)
+
         snapshot = CameraSnapshot.objects.create(
             camera_device_id=device_id,
-            image_url=image_data['url'],
-            image_token=image_data.get('token', ''),
+            image_url='rtsp://stream',
+            image_token='',
         )
 
-        # Download and classify
-        image_bytes = client.download_image(image_data['url'], image_data.get('token', ''))
+        # Classify
         result = classify_image(image_bytes)
 
         if not result.get('success'):

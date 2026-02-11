@@ -13,7 +13,6 @@ urlpatterns = [
 
     # Camera operations
     path('grab-frame/', views.grab_frame, name='grab_frame'),
-    path('classify/', views.classify, name='classify'),
     path('grab-and-classify/', views.grab_and_classify, name='grab_and_classify'),
 
     # Health + Status

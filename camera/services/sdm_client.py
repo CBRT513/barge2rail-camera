@@ -183,11 +183,11 @@ class SDMClient:
         response = self._api_request('GET', url)
         return response.json().get('devices', [])
 
-    def generate_image(self, device_id=None):
+    def generate_rtsp_stream(self, device_id=None):
         """
-        Generate a camera image using the CameraImage trait.
+        Generate an RTSP stream URL using the CameraLiveStream trait.
 
-        Returns dict with 'url' and 'token' for downloading the image.
+        Returns dict with 'streamUrl' and 'streamToken'.
         """
         device_id = device_id or settings.DEFAULT_CAMERA_DEVICE_ID
         if not device_id:
@@ -197,38 +197,70 @@ class SDMClient:
         url = f"{SDM_API_BASE}/enterprises/{project_id}/devices/{device_id}:executeCommand"
 
         payload = {
-            'command': 'sdm.devices.commands.CameraImage.GenerateImage',
-            'params': {},
+            'command': 'sdm.devices.commands.CameraLiveStream.GenerateRtspStream',
         }
 
         response = self._api_request('POST', url, json=payload)
         result = response.json().get('results', {})
 
-        image_url = result.get('url')
-        image_token = result.get('token')
+        stream_url = result.get('streamUrls', {}).get('rtspUrl')
+        stream_token = result.get('streamToken')
 
-        if not image_url:
-            raise SDMError("No image URL in GenerateImage response")
+        if not stream_url:
+            raise SDMError("No RTSP URL in GenerateRtspStream response")
 
         return {
-            'url': image_url,
-            'token': image_token,
+            'stream_url': stream_url,
+            'stream_token': stream_token,
         }
 
-    def download_image(self, image_url, image_token):
+    def grab_frame(self, device_id=None):
         """
-        Download an image from SDM GenerateImage URL.
+        Grab a single frame from the camera's RTSP stream using ffmpeg.
 
-        The image URL requires Basic auth with the image token.
-        Returns the image bytes.
+        Returns JPEG image bytes.
         """
+        import subprocess
+        import tempfile
+        import os
+
+        stream_data = self.generate_rtsp_stream(device_id)
+        rtsp_url = stream_data['stream_url']
+
+        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+            tmp_path = tmp.name
+
         try:
-            response = requests.get(
-                image_url,
-                headers={'Authorization': f'Basic {image_token}'},
+            result = subprocess.run(
+                [
+                    'ffmpeg',
+                    '-y',                   # overwrite output
+                    '-rtsp_transport', 'tcp',
+                    '-i', rtsp_url,
+                    '-frames:v', '1',       # grab one frame
+                    '-q:v', '2',            # JPEG quality
+                    tmp_path,
+                ],
+                capture_output=True,
                 timeout=30,
             )
-            response.raise_for_status()
-            return response.content
-        except requests.RequestException as e:
-            raise SDMError(f"Failed to download image: {e}")
+
+            if result.returncode != 0:
+                stderr = result.stderr.decode('utf-8', errors='replace')[-500:]
+                logger.error(f"ffmpeg failed: {stderr}")
+                raise SDMError(f"ffmpeg failed to grab frame (exit {result.returncode})")
+
+            with open(tmp_path, 'rb') as f:
+                image_bytes = f.read()
+
+            if not image_bytes:
+                raise SDMError("ffmpeg produced empty output")
+
+            logger.info(f"Frame grabbed successfully ({len(image_bytes)} bytes)")
+            return image_bytes
+
+        except subprocess.TimeoutExpired:
+            raise SDMError("ffmpeg timed out grabbing frame from RTSP stream")
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
