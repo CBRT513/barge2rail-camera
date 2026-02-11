@@ -1,0 +1,14 @@
+Django>=5.2,<5.3
+gunicorn>=22.0
+python-decouple>=3.8
+dj-database-url>=2.1
+psycopg2-binary>=2.9
+whitenoise>=6.5
+django-ratelimit>=4.1
+google-auth>=2.29
+google-auth-oauthlib>=1.2
+requests>=2.31
+anthropic>=0.39
+Pillow>=10.2
+PyJWT>=2.8
+cryptography>=42.0
