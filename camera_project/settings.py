@@ -51,7 +51,7 @@ GOOGLE_SDM_PROJECT_ID = config('GOOGLE_SDM_PROJECT_ID', default='')
 GOOGLE_CLOUD_PROJECT_ID = config('GOOGLE_CLOUD_PROJECT_ID', default='')
 GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
 GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET', default='')
-GOOGLE_REDIRECT_URI = config('GOOGLE_REDIRECT_URI', default='http://localhost:8000/api/oauth/callback/')
+SDM_OAUTH_REDIRECT_URI = config('SDM_OAUTH_REDIRECT_URI', default='http://localhost:8000/api/oauth/callback/')
 
 # Anthropic API
 ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')

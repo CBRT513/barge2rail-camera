@@ -46,7 +46,7 @@ class SDMClient:
             raise SDMError("GOOGLE_SDM_PROJECT_ID not configured")
 
         params = {
-            'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+            'redirect_uri': settings.SDM_OAUTH_REDIRECT_URI,
             'access_type': 'offline',
             'prompt': 'consent',
             'client_id': settings.GOOGLE_CLIENT_ID,
@@ -67,7 +67,7 @@ class SDMClient:
             'client_secret': settings.GOOGLE_CLIENT_SECRET,
             'code': authorization_code,
             'grant_type': 'authorization_code',
-            'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+            'redirect_uri': settings.SDM_OAUTH_REDIRECT_URI,
         }
 
         response = requests.post(GOOGLE_TOKEN_URL, data=data, timeout=10)
